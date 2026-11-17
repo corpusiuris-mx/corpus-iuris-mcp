@@ -1,11 +1,13 @@
-// Corpus Iuris — derecho mexicano para agentes. Sin API key.
+// Corpus Iuris — derecho mexicano para agentes.
+// Requiere tu token gratuito: corpusiuris.mx → Mi cuenta → Conecta tu IA.
 const API = 'https://corpusiuris.mx/api/agent/v1'
+const headers = { Authorization: `Bearer ${process.env.CORPUS_IURIS_TOKEN}` }
 
 export async function buscar(q, fuentes = 'leyes,tesis') {
   const u = new URL(`${API}/search`)
   u.searchParams.set('q', q)
   u.searchParams.set('fuentes', fuentes)
-  const r = await fetch(u)
+  const r = await fetch(u, { headers })
   if (!r.ok) throw new Error(`Corpus Iuris: HTTP ${r.status}`)
   return r.json()
 }
@@ -14,7 +16,7 @@ export async function textoIntegro(tipo, id) {
   const u = new URL(`${API}/documento`)
   u.searchParams.set('tipo', tipo)
   u.searchParams.set('id', id)
-  const r = await fetch(u)
+  const r = await fetch(u, { headers })
   if (!r.ok) throw new Error(`Corpus Iuris: HTTP ${r.status}`)
   return (await r.json()).texto
 }

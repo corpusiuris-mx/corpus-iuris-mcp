@@ -1,11 +1,12 @@
 # Corpus Iuris — derecho mexicano para agentes de IA
 
-> **Mexican law for AI agents.** Search 6,710 federal and state statutes,
-> 311,701 Supreme Court *tesis* and 11,708 precedents — with verifiable
+> **Mexican law for AI agents.** Search 7,500+ federal and state statutes,
+> 312,000+ Supreme Court *tesis* and 11,708 precedents — with verifiable
 > citations, dated validity and a public URL for every document.
+> Current figures: [`/api/agent/v1/stats`](https://corpusiuris.mx/api/agent/v1/stats).
 
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-mx.corpusiuris%2Fmexican--law-blue)](https://registry.modelcontextprotocol.io/v0/servers?search=mexican)
-[![API](https://img.shields.io/badge/REST-sin%20API%20key-green)](https://corpusiuris.mx/agentes)
+[![API](https://img.shields.io/badge/acceso-cuenta%20gratuita-green)](https://corpusiuris.mx/conecta)
 [![OpenAPI](https://img.shields.io/badge/OpenAPI-3.1-orange)](https://corpusiuris.mx/openapi.json)
 
 ---
@@ -46,25 +47,37 @@ personalizado → pega la URL. El OAuth se descubre solo.
 }
 ```
 
-Tool disponible: `buscar_derecho_mexicano(query, fuentes)`.
+Tools: `buscar_derecho_mexicano(query, fuentes)` y
+`leer_documento_completo(tipo, documento_id)`.
+
+Al conectar, la persona inicia sesión con su cuenta de Corpus Iuris (gratuita,
+con Google, sin tarjeta) y autoriza a su IA. Las consultas se descuentan de
+**su** cuenta.
 
 ---
 
-## Sin registro: la API REST
+## La API REST (con token personal)
 
-Sin API key. Sin cuenta. Copia y pega:
+Toda consulta requiere identificarse. Genera tu token gratuito en
+[corpusiuris.mx](https://corpusiuris.mx) → **Mi cuenta → Conecta tu IA** y
+mándalo en el encabezado:
 
 ```bash
-curl "https://corpusiuris.mx/api/agent/v1/search?q=requisitos+de+la+orden+de+cateo&fuentes=leyes,tesis"
+export CORPUS_IURIS_TOKEN="ci_agent_…"
+curl -H "Authorization: Bearer $CORPUS_IURIS_TOKEN" \
+  "https://corpusiuris.mx/api/agent/v1/search?q=requisitos+de+la+orden+de+cateo&fuentes=leyes,tesis"
 ```
+
+Sin token, la respuesta es `401 identificacion_requerida` con instrucciones
+para obtenerlo.
 
 ### Las tres rutas
 
 | Ruta | Para qué |
 |---|---|
 | `GET /api/agent/v1/search?q=…&fuentes=…` | Buscar. Hasta 5 resultados por fuente. |
-| `GET /api/agent/v1/documento?tipo=ley&id=slug/num` | Texto **íntegro**. No gasta cuota. |
-| `GET /api/agent/v1/stats` | Cuántos documentos hay, al día. |
+| `GET /api/agent/v1/documento?tipo=ley&id=…` | Texto **íntegro** (usa el `documento_id` que trae cada resultado). |
+| `GET /api/agent/v1/stats` | Cuántos documentos hay, al día. Público. |
 
 Contrato completo: **[openapi.json](https://corpusiuris.mx/openapi.json)** (OpenAPI 3.1).
 
@@ -106,18 +119,15 @@ Y en jurisprudencia, el dato que evita el error clásico:
 
 ## Cuotas
 
-| Carril | Cuota | Cómo se reconoce |
-|---|---|---|
-| **Plataforma de IA** | 3,000/día por plataforma | IP verificada contra la lista oficial que publica |
-| **Agente anónimo** | 500 por IP + **10/día para siempre** | solo IP |
-| **Cuenta gratuita** | 500 + 20/día de por vida | token `ci_agent_` o MCP |
-| **De pago** | 3,000/mes · ilimitado | token |
+| Acceso | Qué incluye |
+|---|---|
+| **Sin cuenta** | Nada: `401 identificacion_requerida` (también para plataformas de IA) |
+| **Cuenta gratuita** — Corpus Test | **500 consultas de por vida.** Cada búsqueda y cada lectura de documento íntegro cuenta una. No se renuevan. |
+| **Corpus Estándar** — $249 MXN/mes | 3,000 búsquedas al mes |
+| **Corpus Ilimitado** — $349 MXN/mes | Sin límite, con política de uso razonable |
 
-El piso diario del carril anónimo **no se agota nunca**: una IP nunca queda
-muerta de forma permanente.
-
-Plataformas verificadas por IP: OpenAI, Anthropic, Google, Perplexity, Meta.
-La etiqueta del `User-Agent` no basta — se comprueba contra el feed oficial.
+Planes y alta: **[corpusiuris.mx/conecta](https://corpusiuris.mx/conecta)** (IVA incluido).
+Cada respuesta trae el bloque `acceso` con lo que te queda.
 
 ---
 
@@ -142,9 +152,10 @@ La etiqueta del `User-Agent` no basta — se comprueba contra el feed oficial.
 
 ## In English
 
-Corpus Iuris is a Mexican legal corpus built for AI agents. Free REST endpoint
-(no key), native MCP server with one-click OAuth, and a public citable page for
-every document. Every result carries dated validity and, for case law, whether
+Corpus Iuris is a Mexican legal corpus built for AI agents. Native MCP server
+with one-click OAuth, REST API with a personal token, and a public citable page
+for every document. A free account includes 500 lifetime queries (each search
+or full-document read counts as one); paid plans start at $249 MXN/month. Every result carries dated validity and, for case law, whether
 it is **binding jurisprudence** or a merely persuasive *tesis aislada* — the
 distinction that most often trips up AI in Mexican law.
 
